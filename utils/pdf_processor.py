@@ -14,7 +14,7 @@ def extract_text_from_pdf(pdf_file):
 
 def generate_summary(text):
     prompt = f"Summarize the following medical report for a patient in simple terms:\n\n{text}"
-    response = client.chat.completions.create(
+    response = chat.completions.create(
         model="gpt-4o-mini",  # Ensure you're using a valid model
         prompt=prompt,
         temperature=0.5,
@@ -24,7 +24,7 @@ def generate_summary(text):
 
 def extract_keywords(text):
     prompt = f"Extract key medical terms, symptoms, and diagnoses from this report:\n\n{text}"
-    response = client.chat.completions.create(
+    response = chat.completions.create(
         model="gpt-4o-mini",  # Ensure you're using a valid model
         prompt=prompt,
         temperature=0.3,
@@ -34,7 +34,7 @@ def extract_keywords(text):
 
 def generate_follow_up_questions(text):
     prompt = f"Based on this report, suggest follow-up questions the patient could ask the doctor:\n\n{text}"
-    response = client.chat.completions.create(
+    response = chat.completions.create(
         model="gpt-4o-mini",  # Ensure you're using a valid model
         prompt=prompt,
         temperature=0.7,
