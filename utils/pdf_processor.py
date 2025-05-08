@@ -1,9 +1,9 @@
 # utils/pdf_processor.py
 import PyPDF2
-from openai import OpenAI
+import OpenAI
 
 import streamlit as st
-client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+
 openai.api_key = st.secrets["openai"]["api_key"]
 
 def extract_text_from_pdf(pdf_file):
