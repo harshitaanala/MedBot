@@ -1,58 +1,36 @@
 import streamlit as st
-
-from utils.pdf_loader import extract_text_from_pdf
-from utils.voice_module import record_voice
-import os
-
-import openai
-openai.api_key = openai_api_key
-
-response = openai.Completion.create(
-    model="text-davinci-003",
-    prompt="Hello, world!",
-    max_tokens=5
+from utils.pdf_processor import (
+    extract_text_from_pdf,
+    generate_summary,
+    extract_keywords,
+    generate_follow_up_questions
 )
 
-st.write(response.choices[0].text.strip())
+st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered")
+st.title("🩺 MedBot")
+st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
 
-openai_api_key = st.secrets["openai"]["api_key"]
-
-st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF")
-st.title("🩺 MedBot – Understand Your Medical Report")
-
-with st.sidebar:
-    st.header("Voice Assistant")
-    voice_query = record_voice()
-
-uploaded_file = st.file_uploader("Upload Medical Report (PDF)", type=["pdf"])
+uploaded_file = st.file_uploader("📄 Upload your medical report (PDF)", type=["pdf"])
 
 if uploaded_file:
-    report_text = extract_text_from_pdf(uploaded_file)
-    st.success("Report successfully extracted!")
+    with st.spinner("Extracting text from PDF..."):
+        text = extract_text_from_pdf(uploaded_file)
 
-    if st.button("Get Summary"):
-        chain = load_chain_from_config("configs/summary_chain.json")
-        result = chain.run({"report_text": report_text})
-        st.subheader("📝 Summary")
-        st.write(result)
+    if st.button("🧠 Generate Summary"):
+        with st.spinner("Generating patient-friendly summary..."):
+            summary = generate_summary(text)
+            st.subheader("📋 Summary")
+            st.write(summary)
+            st.download_button("⬇️ Export Summary", summary, file_name="summary.txt")
 
-    if st.button("Extract Diagnosis & Symptoms"):
-        chain = load_chain_from_config("configs/diagnosis_chain.json")
-        result = chain.run({"report_text": report_text})
-        st.subheader("💊 Diagnosis & Symptoms")
-        st.write(result)
+    if st.button("🔑 Extract Keywords"):
+        with st.spinner("Extracting key medical terms..."):
+            keywords = extract_keywords(text)
+            st.subheader("🔍 Medical Keywords")
+            st.write(keywords)
 
-    if st.button("Follow-up Questions"):
-        chain = load_chain_from_config("configs/followup_chain.json")
-        result = chain.run({"report_text": report_text})
-        st.subheader("❓ Follow-Up Questions")
-        st.write(result)
-
-if voice_query:
-    st.subheader("🎙️ Your Voice Query")
-    st.write(voice_query)
-    if uploaded_file:
-        qna_chain = load_chain_from_config("configs/summary_chain.json")
-        reply = qna_chain.run({"report_text": report_text + "\n\nUser question: " + voice_query})
-        st.subheader("🤖 AI Response")
-        st.write(reply)
+    if st.button("❓ Follow-up Questions"):
+        with st.spinner("Generating questions for doctor visit..."):
+            questions = generate_follow_up_questions(text)
+            st.subheader("💬 Suggested Follow-Up Questions")
+            st.write(questions)
