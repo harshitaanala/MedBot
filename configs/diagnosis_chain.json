@@ -1,0 +1,11 @@
+{
+  "chain_type": "LLMChain",
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.3
+  },
+  "prompt": {
+    "template": "Extract diagnosis and symptoms from the report:\n\n{report_text}"
+  }
+}

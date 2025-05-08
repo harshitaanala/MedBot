@@ -1,0 +1,11 @@
+{
+  "chain_type": "LLMChain",
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.5
+  },
+  "prompt": {
+    "template": "Generate follow-up questions a patient can ask the doctor based on this report:\n\n{report_text}"
+  }
+}

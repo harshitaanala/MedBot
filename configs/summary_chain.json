@@ -1,0 +1,11 @@
+{
+  "chain_type": "LLMChain",
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.3
+  },
+  "prompt": {
+    "template": "You are a friendly doctor. Summarize the following medical report:\n\n{report_text}"
+  }
+}
