@@ -2,7 +2,6 @@ streamlit
 PyPDF2
 langchain
 openai
-langchain-mcp
-streamlit_speech_to_text
+
 streamlit_chat
 python-dotenv
