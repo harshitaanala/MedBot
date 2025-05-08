@@ -4,6 +4,19 @@ from utils.pdf_loader import extract_text_from_pdf
 from utils.voice_module import record_voice
 import os
 
+import openai
+openai.api_key = openai_api_key
+
+response = openai.Completion.create(
+    model="text-davinci-003",
+    prompt="Hello, world!",
+    max_tokens=5
+)
+
+st.write(response.choices[0].text.strip())
+
+openai_api_key = st.secrets["openai"]["api_key"]
+
 st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF")
 st.title("🩺 MedBot – Understand Your Medical Report")
 
