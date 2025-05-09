@@ -53,3 +53,16 @@ def generate_follow_up_questions(text):
         max_tokens=300
     )
     return response.choices[0].message.content.strip()  # Extract the text from the response
+
+def chat_with_doctor_bot(user_input, context_text):
+    messages = [
+        {"role": "system", "content": "You are a compassionate and knowledgeable medical assistant. Help the user understand their symptoms or report content."},
+        {"role": "user", "content": f"The context is: {context_text[:2000]}\n\nQuestion: {user_input}"}
+    ]
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",  # or gpt-3.5-turbo if not available
+        messages=messages,
+        temperature=0.6,
+        max_tokens=500
+    )
+    return response.choices[0].message.content.strip()
