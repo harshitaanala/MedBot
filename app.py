@@ -18,29 +18,39 @@ st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered"
 st.title("🩺 MedBot")
 st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
 
-uploaded_file = st.file_uploader("📄 Upload your medical report (PDF)", type=["pdf"])
-text = ""
+# 🆕 Multiple PDF Upload
+uploaded_files = st.file_uploader("📄 Upload your medical reports (PDFs)", type=["pdf"], accept_multiple_files=True)
 
-if uploaded_file:
-    with st.spinner("Extracting text from PDF..."):
-        text = extract_text_from_pdf(uploaded_file)
+combined_text = ""
+all_texts = []
+
+if uploaded_files:
+    st.write("✅ Uploaded Reports:")
+    for file in uploaded_files:
+        st.markdown(f"- {file.name}")
+        with st.spinner(f"Extracting text from {file.name}..."):
+            text = extract_text_from_pdf(file)
+            all_texts.append(text)
+
+    # 🧠 Combine all extracted texts
+    combined_text = "\n\n".join(all_texts)
 
     if st.button("🧠 Generate Summary"):
         with st.spinner("Generating patient-friendly summary..."):
-            summary = generate_summary(text)
+            summary = generate_summary(combined_text)
             st.subheader("📋 Summary")
             st.write(summary)
             st.download_button("⬇️ Export Summary", summary, file_name="summary.txt")
 
     if st.button("🔑 Extract Keywords"):
         with st.spinner("Extracting key medical terms..."):
-            keywords = extract_keywords(text)
+            keywords = extract_keywords(combined_text)
             st.subheader("🔍 Medical Keywords")
             st.write(keywords)
 
     if st.button("❓ Follow-up Questions"):
         with st.spinner("Generating questions for doctor visit..."):
-            questions = generate_follow_up_questions(text)
+            questions = generate_follow_up_questions(combined_text)
             st.subheader("💬 Suggested Follow-Up Questions")
             st.write(questions)
 
@@ -65,7 +75,7 @@ if prompt := st.sidebar.chat_input("Type your question here..."):
 
     with st.sidebar.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            reply = chat_with_doctor_bot(prompt, text)
+            reply = chat_with_doctor_bot(prompt, combined_text)
             st.markdown(reply)
 
     st.session_state.chat_history.append({"role": "assistant", "content": reply})
@@ -83,7 +93,7 @@ if st.button("🔍 Diagnose & Recommend Medicines"):
         st.warning("Please describe your symptoms.")
     else:
         with st.spinner("Analyzing symptoms..."):
-            diagnosis = diagnose_and_recommend(symptom_input, text if uploaded_file else "")
+            diagnosis = diagnose_and_recommend(symptom_input, combined_text if uploaded_files else "")
             st.subheader("🩺 Possible Diagnosis")
             st.markdown(diagnosis)
 
@@ -165,6 +175,8 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                             distance = geodesic((lat, lon), (h_lat, h_lon)).km
                             hospitals.append((name, h_lat, h_lon, distance))
 
+                    # Filter only those within 10 km
+                    hospitals = [h for h in hospitals if h[3] <= 10]
                     hospitals = sorted(hospitals, key=lambda x: x[3])[:3]
 
                     # 📌 Step 5: Display
@@ -175,8 +187,6 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                             map_link = f"https://www.google.com/maps/search/?api=1&query={h_lat},{h_lon}"
                             st.markdown(f"[🗺️ View on Google Maps]({map_link})")
                     else:
-                        st.warning(f"No {hospital_type} hospitals found within 5km of your location.")
+                        st.warning(f"No {hospital_type} hospitals found within 10 km of your location.")
                 else:
                     st.error("Could not find your location. Please enter a valid area or ZIP code.")
-
-
