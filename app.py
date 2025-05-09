@@ -47,7 +47,7 @@ if uploaded_file:
 # 🤖 Chatbot (Sidebar)
 # =======================
 
-st.sidebar.markdown("### 🤖 Ask MedBot (Chat)")
+st.sidebar.markdown("### 🤖 Ask MedBot")
 st.sidebar.markdown("Ask any health-related doubts or questions about your medical report.")
 
 # Initialize chat history
