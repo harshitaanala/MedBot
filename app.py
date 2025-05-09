@@ -19,7 +19,7 @@ st.title("🩺 MedBot")
 st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
 
 # 🆕 Multiple PDF Upload
-uploaded_files = st.file_uploader("📄 Upload your medical reports (PDFs)", type=["pdf"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("📄 Upload your medical reports (PDF)", type=["pdf"], accept_multiple_files=True)
 
 combined_text = ""
 all_texts = []
