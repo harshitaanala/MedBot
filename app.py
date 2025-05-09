@@ -1,4 +1,7 @@
 import streamlit as st
+
+st.set_page_config(page_title="🗺️ Nearby Hospitals", layout="centered")
+
 from geopy.geocoders import Nominatim
 import folium
 from streamlit_folium import st_folium
@@ -15,7 +18,7 @@ from openai import OpenAI
 
 # Set up the Streamlit page
 
-st.set_page_config(page_title="🗺️ Nearby Hospitals", layout="centered")
+
 
 st.title("🏥 Find Nearby Hospitals")
 st.markdown("We'll detect your location and suggest the **top 3 hospitals** within 5 km.")
