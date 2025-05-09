@@ -5,3 +5,8 @@ openai
 
 streamlit_chat
 python-dotenv
+
+geopy
+folium
+streamlit-folium
+requests
