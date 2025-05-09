@@ -66,3 +66,28 @@ def chat_with_doctor_bot(user_input, context_text):
         max_tokens=500
     )
     return response.choices[0].message.content.strip()
+
+def diagnose_and_recommend(symptoms_text, context_text=""):
+    prompt = f"""
+You are a licensed medical assistant AI. A user has described the following symptoms:\n
+{symptoms_text}\n
+
+{f"Their medical report also includes: {context_text[:2000]}" if context_text else ""}
+
+Based on this, do the following:
+1. Identify possible conditions (diagnosis) in simple terms.
+2. Suggest over-the-counter medications or treatment (avoid prescription drugs).
+3. Add a disclaimer that a doctor should be consulted for confirmation.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",  # or gpt-3.5-turbo
+        messages=[
+            {"role": "system", "content": "You are a helpful and careful AI medical assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=700
+    )
+    return response.choices[0].message.content.strip()
+
