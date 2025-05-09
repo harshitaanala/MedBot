@@ -14,6 +14,5 @@ streamlit-authenticator
 nltk
 tqdm
 
-SpeechRecognition
-pyaudio
+
 bcrypt
