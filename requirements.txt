@@ -10,3 +10,10 @@ geopy
 folium
 streamlit-folium
 requests
+streamlit-authenticator
+nltk
+tqdm
+
+SpeechRecognition
+pyaudio
+bcrypt
