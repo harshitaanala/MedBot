@@ -72,3 +72,19 @@ if prompt := st.sidebar.chat_input("Type your question here..."):
             st.markdown(reply)
 
     st.session_state.chat_history.append({"role": "assistant", "content": reply})
+
+st.markdown("---")
+st.subheader("💊 Symptom Checker & Medicine Suggestions")
+st.markdown("Enter your symptoms below. MedBot will try to identify the condition and suggest common medications. Always consult a real doctor before taking any medicines.")
+
+symptom_input = st.text_area("📝 Describe your symptoms")
+
+if st.button("🔍 Diagnose & Recommend Medicines"):
+    if not symptom_input.strip():
+        st.warning("Please describe your symptoms.")
+    else:
+        with st.spinner("Analyzing symptoms..."):
+            diagnosis = diagnose_and_recommend(symptom_input, text if uploaded_file else "")
+            st.subheader("🩺 Possible Diagnosis")
+            st.markdown(diagnosis)
+
