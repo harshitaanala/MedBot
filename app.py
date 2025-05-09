@@ -14,6 +14,76 @@ from utils.pdf_processor import (
 from openai import OpenAI
 
 # Set up the Streamlit page
+
+st.set_page_config(page_title="🗺️ Nearby Hospitals", layout="centered")
+
+st.title("🏥 Find Nearby Hospitals")
+st.markdown("We'll detect your location and suggest the **top 3 hospitals** within 5 km.")
+
+# 1. Get user location using Nominatim or manual input
+geolocator = Nominatim(user_agent="medbot-hospitals")
+
+location_input = st.text_input("Enter your location or area (e.g., Andheri East, Mumbai):")
+
+if location_input:
+    location = geolocator.geocode(location_input)
+    
+    if location:
+        lat, lon = location.latitude, location.longitude
+        st.success(f"📍 Location detected: {location.address}")
+
+        # 2. Use OpenStreetMap Overpass API to fetch hospitals
+        st.info("Fetching nearby hospitals...")
+
+        overpass_url = "http://overpass-api.de/api/interpreter"
+        query = f"""
+        [out:json];
+        (
+          node["amenity"="hospital"](around:5000,{lat},{lon});
+          way["amenity"="hospital"](around:5000,{lat},{lon});
+          relation["amenity"="hospital"](around:5000,{lat},{lon});
+        );
+        out center;
+        """
+
+        response = requests.get(overpass_url, params={'data': query})
+        data = response.json()
+
+        hospitals = []
+        for element in data['elements']:
+            if 'tags' in element and 'name' in element['tags']:
+                name = element['tags']['name']
+                lat = element.get('lat') or element['center']['lat']
+                lon = element.get('lon') or element['center']['lon']
+                hospitals.append((name, lat, lon))
+
+        # 3. Display top 3 hospitals on map
+        if hospitals:
+            st.success(f"✅ Found {len(hospitals)} hospitals. Showing top 3:")
+            top_3 = hospitals[:3]
+
+            # Create Map
+            map_ = folium.Map(location=[location.latitude, location.longitude], zoom_start=14)
+            folium.Marker(
+                [location.latitude, location.longitude],
+                tooltip="You are here",
+                icon=folium.Icon(color='blue')
+            ).add_to(map_)
+
+            for name, lat_, lon_ in top_3:
+                folium.Marker(
+                    [lat_, lon_],
+                    tooltip=name,
+                    icon=folium.Icon(color='red', icon='plus-sign')
+                ).add_to(map_)
+
+            st_folium(map_, width=700, height=500)
+        else:
+            st.warning("❗ No hospitals found within 5 km.")
+
+    else:
+        st.error("Could not detect location. Try entering a more specific area.")
+
 st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered")
 st.title("🩺 MedBot")
 st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
@@ -93,72 +163,5 @@ if st.button("🔍 Diagnose & Recommend Medicines"):
             st.subheader("🩺 Possible Diagnosis")
             st.markdown(diagnosis)
 
-st.set_page_config(page_title="🗺️ Nearby Hospitals", layout="centered")
 
-st.title("🏥 Find Nearby Hospitals")
-st.markdown("We'll detect your location and suggest the **top 3 hospitals** within 5 km.")
-
-# 1. Get user location using Nominatim or manual input
-geolocator = Nominatim(user_agent="medbot-hospitals")
-
-location_input = st.text_input("Enter your location or area (e.g., Andheri East, Mumbai):")
-
-if location_input:
-    location = geolocator.geocode(location_input)
-    
-    if location:
-        lat, lon = location.latitude, location.longitude
-        st.success(f"📍 Location detected: {location.address}")
-
-        # 2. Use OpenStreetMap Overpass API to fetch hospitals
-        st.info("Fetching nearby hospitals...")
-
-        overpass_url = "http://overpass-api.de/api/interpreter"
-        query = f"""
-        [out:json];
-        (
-          node["amenity"="hospital"](around:5000,{lat},{lon});
-          way["amenity"="hospital"](around:5000,{lat},{lon});
-          relation["amenity"="hospital"](around:5000,{lat},{lon});
-        );
-        out center;
-        """
-
-        response = requests.get(overpass_url, params={'data': query})
-        data = response.json()
-
-        hospitals = []
-        for element in data['elements']:
-            if 'tags' in element and 'name' in element['tags']:
-                name = element['tags']['name']
-                lat = element.get('lat') or element['center']['lat']
-                lon = element.get('lon') or element['center']['lon']
-                hospitals.append((name, lat, lon))
-
-        # 3. Display top 3 hospitals on map
-        if hospitals:
-            st.success(f"✅ Found {len(hospitals)} hospitals. Showing top 3:")
-            top_3 = hospitals[:3]
-
-            # Create Map
-            map_ = folium.Map(location=[location.latitude, location.longitude], zoom_start=14)
-            folium.Marker(
-                [location.latitude, location.longitude],
-                tooltip="You are here",
-                icon=folium.Icon(color='blue')
-            ).add_to(map_)
-
-            for name, lat_, lon_ in top_3:
-                folium.Marker(
-                    [lat_, lon_],
-                    tooltip=name,
-                    icon=folium.Icon(color='red', icon='plus-sign')
-                ).add_to(map_)
-
-            st_folium(map_, width=700, height=500)
-        else:
-            st.warning("❗ No hospitals found within 5 km.")
-
-    else:
-        st.error("Could not detect location. Try entering a more specific area.")
 
