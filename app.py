@@ -4,7 +4,8 @@ from utils.pdf_processor import (
     generate_summary,
     extract_keywords,
     generate_follow_up_questions,
-    chat_with_doctor_bot  # Add this function in pdf_processor.py
+    chat_with_doctor_bot,
+    diagnose_and_recommend  # Add this function in pdf_processor.py
 )
 from openai import OpenAI
 
