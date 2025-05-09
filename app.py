@@ -144,9 +144,9 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                     query = f"""
                     [out:json];
                     (
-                      node[{filter_tag}](around:5000,{lat},{lon});
-                      way[{filter_tag}](around:5000,{lat},{lon});
-                      relation[{filter_tag}](around:5000,{lat},{lon});
+                      node[{filter_tag}](around:10000,{lat},{lon});
+                      way[{filter_tag}](around:10000,{lat},{lon});
+                      relation[{filter_tag}](around:10000,{lat},{lon});
                     );
                     out center;
                     """
