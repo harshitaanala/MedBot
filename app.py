@@ -89,37 +89,71 @@ if st.button("🔍 Diagnose & Recommend Medicines"):
 
 
 # ================================
-# 🏥 Nearby Hospital Finder
+# 🏥 Smart Hospital Recommender
 # ================================
 st.markdown("---")
-st.subheader("🏥 Nearby Hospitals")
+st.subheader("🏥 Smart Hospital Finder Based on Symptoms")
 
-with st.expander("📍 Find hospitals within 5km based on your location"):
-    location_input = st.text_input("Enter your location (e.g., Mumbai, Andheri East or ZIP code)")
+with st.expander("📍 Get specialized hospitals nearby based on your symptoms"):
+    location_input = st.text_input("Enter your location (e.g., Mumbai, Andheri East, or ZIP code)")
 
-    if st.button("🔎 Search Nearby Hospitals"):
-        if not location_input.strip():
+    if st.button("📡 Recommend Nearby Hospitals"):
+        if not symptom_input.strip():
+            st.warning("Please enter your symptoms above before searching.")
+        elif not location_input.strip():
             st.warning("Please enter your location.")
         else:
-            with st.spinner("Searching for nearby hospitals..."):
+            with st.spinner("Analyzing symptoms and searching hospitals..."):
+
+                # 🧠 Step 1: Match symptom keywords to hospital type
+                def determine_hospital_type(symptoms):
+                    symptoms = symptoms.lower()
+                    if any(word in symptoms for word in ["eye", "vision", "blur", "sight"]):
+                        return "eye"
+                    elif any(word in symptoms for word in ["heart", "chest pain", "cardiac", "palpitation"]):
+                        return "cardiology"
+                    elif any(word in symptoms for word in ["skin", "rash", "itching", "eczema", "acne"]):
+                        return "dermatology"
+                    elif any(word in symptoms for word in ["bones", "joint", "orthopedic", "fracture", "back pain"]):
+                        return "orthopedic"
+                    elif any(word in symptoms for word in ["fever", "cold", "cough", "flu", "body pain"]):
+                        return "general"
+                    else:
+                        return "general"  # default fallback
+
+                hospital_type = determine_hospital_type(symptom_input)
+
+                # 🗺️ Step 2: Geocode location
                 geolocator = Nominatim(user_agent="medbot_app")
                 location = geolocator.geocode(location_input)
 
                 if location:
                     lat, lon = location.latitude, location.longitude
+
+                    # 🗃️ Step 3: Build Overpass query by hospital type
+                    keyword_map = {
+                        "general": '"amenity"="hospital"',
+                        "eye": '"name"~"Eye|Ophthalmology"',
+                        "cardiology": '"name"~"Cardiology|Heart"',
+                        "dermatology": '"name"~"Skin|Dermatology"',
+                        "orthopedic": '"name"~"Ortho|Orthopedic"'
+                    }
+                    filter_tag = keyword_map.get(hospital_type, '"amenity"="hospital"')
+
                     overpass_url = "http://overpass-api.de/api/interpreter"
                     query = f"""
                     [out:json];
                     (
-                      node["amenity"="hospital"](around:5000,{lat},{lon});
-                      way["amenity"="hospital"](around:5000,{lat},{lon});
-                      relation["amenity"="hospital"](around:5000,{lat},{lon});
+                      node[{filter_tag}](around:5000,{lat},{lon});
+                      way[{filter_tag}](around:5000,{lat},{lon});
+                      relation[{filter_tag}](around:5000,{lat},{lon});
                     );
                     out center;
                     """
                     response = requests.post(overpass_url, data={'data': query})
                     data = response.json()
 
+                    # 📋 Step 4: Parse and rank hospitals
                     hospitals = []
                     for element in data['elements']:
                         if 'tags' in element and 'name' in element['tags']:
@@ -131,15 +165,18 @@ with st.expander("📍 Find hospitals within 5km based on your location"):
                             distance = geodesic((lat, lon), (h_lat, h_lon)).km
                             hospitals.append((name, h_lat, h_lon, distance))
 
-                    hospitals = sorted(hospitals, key=lambda x: x[3])[:3]  # Top 3 nearest
+                    hospitals = sorted(hospitals, key=lambda x: x[3])[:3]
 
+                    # 📌 Step 5: Display
+                    st.markdown(f"### 🏥 Top {hospital_type.capitalize()} Hospitals Near You")
                     if hospitals:
                         for idx, (name, h_lat, h_lon, dist) in enumerate(hospitals, 1):
                             st.markdown(f"**{idx}. {name}** – {dist:.2f} km away")
                             map_link = f"https://www.google.com/maps/search/?api=1&query={h_lat},{h_lon}"
                             st.markdown(f"[🗺️ View on Google Maps]({map_link})")
                     else:
-                        st.warning("No hospitals found within 5km of this location.")
+                        st.warning(f"No {hospital_type} hospitals found within 5km of your location.")
                 else:
-                    st.error("Could not find the location. Please enter a valid city or area.")
+                    st.error("Could not find your location. Please enter a valid area or ZIP code.")
+
 
