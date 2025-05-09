@@ -16,8 +16,6 @@ import tempfile
 import os
 import time
 import base64
-import speech_recognition as sr
-from pydub import AudioSegment
 
 # ✅ Set API key from Streamlit secrets
 openai.api_key = st.secrets["openai_api_key"]
@@ -91,35 +89,6 @@ if prompt := st.sidebar.chat_input("Type your question here..."):
 
     st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
-
-# ================================
-# 🎙️ Voice Assistant
-# ================================
-st.markdown("---")
-st.subheader("🎙️ Voice Input for Symptom Checker")
-
-audio_file = st.file_uploader("🎤 Upload voice note (MP3)", type=["mp3"])
-
-if audio_file:
-    with st.spinner("Transcribing audio..."):
-        # Convert MP3 to WAV
-        audio = AudioSegment.from_file(audio_file, format="mp3")
-        wav_path = os.path.join(tempfile.gettempdir(), f"{int(time.time())}_converted.wav")
-        audio.export(wav_path, format="wav")
-
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(wav_path) as source:
-            audio_data = recognizer.record(source)
-            try:
-                transcription = recognizer.recognize_google(audio_data)
-                st.success("Transcription:")
-                st.write(transcription)
-            except sr.UnknownValueError:
-                st.error("Could not understand audio.")
-            except sr.RequestError:
-                st.error("Error with the speech recognition service.")
-
-
 # ================================
 # 💊 Symptom Checker
 # ================================
@@ -135,7 +104,6 @@ if st.button("🔍 Diagnose & Recommend Medicines"):
             diagnosis = diagnose_and_recommend(symptom_input, combined_text if uploaded_files else "")
             st.subheader("🩺 Possible Diagnosis")
             st.markdown(diagnosis)
-
 
 # ================================
 # 🏥 Smart Hospital Finder
