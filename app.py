@@ -18,7 +18,7 @@ import time
 import base64
 
 # ✅ Set API key from Streamlit secrets
-openai.api_key = st.secrets["api_key"]
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # ✅ Set Streamlit config
 st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered")
