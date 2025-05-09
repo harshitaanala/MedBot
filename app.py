@@ -1,15 +1,20 @@
 import streamlit as st
 from langchain_mcp.loader import load_chain_from_config
 from utils.pdf_loader import extract_text_from_pdf
-from utils.voice_module import record_voice
+
 import os
+import utils.voice_module as voice
 
-st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF")
-st.title("🩺 MedBot – Understand Your Medical Report")
+from utils.voice_module import record_and_transcribe
 
-with st.sidebar:
-    st.header("Voice Assistant")
-    voice_query = record_voice()
+st.set_page_config(page_title="MedBot Voice Chat", layout="centered")
+st.title("🩺 MedBot - Doctor in a PDF")
+st.subheader("🎤 Talk to MedBot using your voice")
+
+if st.button("🎙 Start Voice Chat"):
+    transcribed = record_and_transcribe()
+    if transcribed:
+        st.write("🗣️ You said:", transcribed)
 
 uploaded_file = st.file_uploader("Upload Medical Report (PDF)", type=["pdf"])
 
