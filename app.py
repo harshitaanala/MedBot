@@ -11,14 +11,26 @@ from utils.pdf_processor import (
 
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
+import openai
+import tempfile
+import os
+import time
+import base64
+import speech_recognition as sr
+from pydub import AudioSegment
 
-# ✅ Must be the very first Streamlit command
+# ✅ Set API key from Streamlit secrets
+openai.api_key = st.secrets["openai_api_key"]
+
+# ✅ Set Streamlit config
 st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered")
 
 st.title("🩺 MedBot")
 st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
 
-# 🆕 Multiple PDF Upload
+# ================================
+# 📄 PDF Upload
+# ================================
 uploaded_files = st.file_uploader("📄 Upload your medical reports (PDF)", type=["pdf"], accept_multiple_files=True)
 
 combined_text = ""
@@ -32,7 +44,6 @@ if uploaded_files:
             text = extract_text_from_pdf(file)
             all_texts.append(text)
 
-    # 🧠 Combine all extracted texts
     combined_text = "\n\n".join(all_texts)
 
     if st.button("🧠 Generate Summary"):
@@ -82,6 +93,34 @@ if prompt := st.sidebar.chat_input("Type your question here..."):
 
 
 # ================================
+# 🎙️ Voice Assistant
+# ================================
+st.markdown("---")
+st.subheader("🎙️ Voice Input for Symptom Checker")
+
+audio_file = st.file_uploader("🎤 Upload voice note (MP3)", type=["mp3"])
+
+if audio_file:
+    with st.spinner("Transcribing audio..."):
+        # Convert MP3 to WAV
+        audio = AudioSegment.from_file(audio_file, format="mp3")
+        wav_path = os.path.join(tempfile.gettempdir(), f"{int(time.time())}_converted.wav")
+        audio.export(wav_path, format="wav")
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_path) as source:
+            audio_data = recognizer.record(source)
+            try:
+                transcription = recognizer.recognize_google(audio_data)
+                st.success("Transcription:")
+                st.write(transcription)
+            except sr.UnknownValueError:
+                st.error("Could not understand audio.")
+            except sr.RequestError:
+                st.error("Error with the speech recognition service.")
+
+
+# ================================
 # 💊 Symptom Checker
 # ================================
 st.markdown("---")
@@ -99,7 +138,7 @@ if st.button("🔍 Diagnose & Recommend Medicines"):
 
 
 # ================================
-# 🏥 Smart Hospital Recommender
+# 🏥 Smart Hospital Finder
 # ================================
 st.markdown("---")
 st.subheader("🏥 Smart Hospital Finder Based on Symptoms")
@@ -115,7 +154,6 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
         else:
             with st.spinner("Analyzing symptoms and searching hospitals..."):
 
-                # 🧠 Step 1: Match symptom keywords to hospital type
                 def determine_hospital_type(symptoms):
                     symptoms = symptoms.lower()
                     if any(word in symptoms for word in ["eye", "vision", "blur", "sight"]):
@@ -129,18 +167,16 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                     elif any(word in symptoms for word in ["fever", "cold", "cough", "flu", "body pain"]):
                         return "general"
                     else:
-                        return "general"  # default fallback
+                        return "general"
 
                 hospital_type = determine_hospital_type(symptom_input)
 
-                # 🗺️ Step 2: Geocode location
                 geolocator = Nominatim(user_agent="medbot_app")
                 location = geolocator.geocode(location_input)
 
                 if location:
                     lat, lon = location.latitude, location.longitude
 
-                    # 🗃️ Step 3: Build Overpass query by hospital type
                     keyword_map = {
                         "general": '"amenity"="hospital"',
                         "eye": '"name"~"Eye|Ophthalmology"',
@@ -163,7 +199,6 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                     response = requests.post(overpass_url, data={'data': query})
                     data = response.json()
 
-                    # 📋 Step 4: Parse and rank hospitals
                     hospitals = []
                     for element in data['elements']:
                         if 'tags' in element and 'name' in element['tags']:
@@ -175,11 +210,9 @@ with st.expander("📍 Get specialized hospitals nearby based on your symptoms")
                             distance = geodesic((lat, lon), (h_lat, h_lon)).km
                             hospitals.append((name, h_lat, h_lon, distance))
 
-                    # Filter only those within 10 km
                     hospitals = [h for h in hospitals if h[3] <= 10]
                     hospitals = sorted(hospitals, key=lambda x: x[3])[:3]
 
-                    # 📌 Step 5: Display
                     st.markdown(f"### 🏥 Top {hospital_type.capitalize()} Hospitals Near You")
                     if hospitals:
                         for idx, (name, h_lat, h_lon, dist) in enumerate(hospitals, 1):
