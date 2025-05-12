@@ -14,6 +14,10 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import openai
 
+if "logged_in" not in st.session_state or not st.session_state.logged_in:
+    show_login_page()
+    st.stop() 
+
 # ✅ Init DB
 create_user_table()
 
