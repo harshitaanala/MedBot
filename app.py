@@ -95,7 +95,7 @@ if st.session_state.logged_in:
                 st.write(summary)
                 st.download_button("⬇️ Export Summary", summary, file_name="summary.txt")
 
-                 st.subheader("Translate Summary to Hindi")
+                st.subheader("Translate Summary to Hindi")
                 translator = Translator()
 
                 if st.button("Translate to Hindi"):
