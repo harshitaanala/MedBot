@@ -4,7 +4,7 @@ from .db import get_connection, create_user_table
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-def sign_up(username, password):
+def signup_user(username, password):
     conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE username = ?', (username,))
