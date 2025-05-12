@@ -17,7 +17,7 @@ def sign_up(username, password):
     conn.close()
     return True
 
-def login(username, password):
+def login_user(username, password):
     conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, hash_password(password)))
