@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from auth.auth import login_user, signup_user
+from auth.auth import login_user, signup_user, show_login_page
 from auth.db import create_user_table
 from utils.pdf_processor import (
     extract_text_from_pdf,
