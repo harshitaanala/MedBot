@@ -54,3 +54,7 @@ def show_login_page():
                 st.rerun()
             else:
                 st.error("Invalid username or password.")
+
+def logout_user():
+    # You can add logic here if needed, but it should be handled in the session state in app.py.
+    return True
