@@ -1,43 +1,26 @@
-import streamlit as st
-from auth.db import create_user_table, add_user, login_user
+import hashlib
+from .db import get_connection, create_user_table
 
-def show_login_page():
-    st.subheader("🔐 Login")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        user = login_user(email, password)
-        if user:
-            st.session_state.logged_in = True
-            st.session_state.user = user
-            st.success(f"Welcome, {user['name']}!")
-            st.experimental_rerun()
-        else:
-            st.error("Invalid email or password")
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-def show_register_page():
-    st.subheader("📝 Register")
-    name = st.text_input("Name")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Register"):
-        if add_user(name, email, password):
-            st.success("Registration successful. Please login.")
-        else:
-            st.warning("Email already registered.")
+def sign_up(username, password):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT * FROM users WHERE username = ?', (username,))
+    if c.fetchone():
+        conn.close()
+        return False  # Username exists
+    hashed = hash_password(password)
+    c.execute('INSERT INTO users(username, password) VALUES (?, ?)', (username, hashed))
+    conn.commit()
+    conn.close()
+    return True
 
-def show_auth_page():
-    create_user_table()
-    if "show_register" not in st.session_state:
-        st.session_state.show_register = False
-
-    if st.session_state.show_register:
-        show_register_page()
-        if st.button("Go to Login"):
-            st.session_state.show_register = False
-            st.experimental_rerun()
-    else:
-        show_login_page()
-        if st.button("Go to Register"):
-            st.session_state.show_register = True
-            st.experimental_rerun()
+def login(username, password):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, hash_password(password)))
+    data = c.fetchone()
+    conn.close()
+    return bool(data)
