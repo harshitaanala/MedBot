@@ -2,7 +2,7 @@ import hashlib
 import streamlit as st
 from .db import get_connection, create_user_table
 
-# Ensure table exists
+
 create_user_table()
 
 def hash_password(password):
@@ -14,7 +14,7 @@ def signup_user(username, password):
     c.execute('SELECT * FROM users WHERE username = ?', (username,))
     if c.fetchone():
         conn.close()
-        return False  # Username already exists
+        return False 
     hashed = hash_password(password)
     c.execute('INSERT INTO users(username, password) VALUES (?, ?)', (username, hashed))
     conn.commit()
@@ -29,7 +29,7 @@ def login_user(username, password):
     conn.close()
     return bool(data)
 
-# ✅ UI function to show login/signup
+
 def show_login_page():
     st.title("🔐 Login / Signup")
 
@@ -56,5 +56,5 @@ def show_login_page():
                 st.error("Invalid username or password.")
 
 def logout_user():
-    # You can add logic here if needed, but it should be handled in the session state in app.py.
+    
     return True
