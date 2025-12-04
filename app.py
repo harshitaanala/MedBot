@@ -19,20 +19,20 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     show_login_page()
     st.stop() 
 
-# ✅ Init DB
+
 create_user_table()
 
-# ✅ Set OpenAI API key
+
 openai.api_key = st.secrets["openai"]["api_key"]
 
-# ✅ Page config
+
 st.set_page_config(page_title="🩺 MedBot - Doctor in a PDF", layout="centered")
 st.title("🩺 MedBot")
 st.subheader("Doctor in a PDF: Simplify Your Medical Reports")
 
-# ===============================
-# 👤 Authentication
-# ===============================
+
+# Authentication
+
 if "user" not in st.session_state:
     st.session_state.user = None
 if "logged_in" not in st.session_state:
@@ -68,9 +68,7 @@ elif auth_tab == "Logout":
         st.session_state.logged_in = False
         st.rerun()
 
-# ===============================
-# 🧠 Core App Logic (if logged in)
-# ===============================
+# app logic
 if st.session_state.logged_in:
 
     uploaded_files = st.file_uploader("📄 Upload your medical reports (PDF)", type=["pdf"], accept_multiple_files=True)
@@ -109,9 +107,9 @@ if st.session_state.logged_in:
                 st.subheader("💬 Suggested Follow-Up Questions")
                 st.write(questions)
 
-    # ===============================
-    # 🤖 Chatbot (Sidebar)
-    # ===============================
+   
+    #  chatbot 
+  
     st.sidebar.markdown("### 🤖 Ask MedBot")
     st.sidebar.markdown("Ask any health-related doubts or questions about your medical report.")
 
@@ -135,9 +133,9 @@ if st.session_state.logged_in:
 
         st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
-    # ===============================
-    # 💊 Symptom Checker
-    # ===============================
+    
+    # Symptom Checker
+    
     st.markdown("---")
     st.subheader("💊 Symptom Checker & Medicine Suggestions")
     symptom_input = st.text_area("📝 Describe your symptoms")
@@ -151,9 +149,9 @@ if st.session_state.logged_in:
                 st.subheader("🩺 Possible Diagnosis")
                 st.markdown(diagnosis)
 
-    # ===============================
-    # 🏥 Smart Hospital Finder
-    # ===============================
+    
+    # Smart Hospital Finder
+   
     st.markdown("---")
     st.subheader("🏥 Smart Hospital Finder Based on Symptoms")
 
